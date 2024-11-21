@@ -10,21 +10,24 @@ public class Bullet : MonoBehaviour
     public int damage = 10;
 
     private Rigidbody2D rb;
-    private IObjectPool<Bullet> pool; 
+    public IObjectPool<Bullet> objectPool;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        rb.velocity = Vector2.up * bulletSpeed;
+        if (rb != null)
+        {
+            rb.velocity = transform.up * bulletSpeed;
+        }
     }
 
-    public void SetPool(IObjectPool<Bullet> objectPool)
+    public void SetPool(IObjectPool<Bullet> pool)
     {
-        pool = objectPool;
+        objectPool = pool;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -37,7 +40,7 @@ public class Bullet : MonoBehaviour
                 hitbox.Damage(damage);
             }
 
-            ReturnToPool(); 
+            ReturnToPool();
         }
     }
 
@@ -47,15 +50,14 @@ public class Bullet : MonoBehaviour
     }
 
     private void ReturnToPool()
-{
-    if (pool != null)
     {
-        pool.Release(this); 
+        if (objectPool != null)
+        {
+            objectPool.Release(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
-    else
-    {
-        Destroy(gameObject); 
-    }
-}
-
 }

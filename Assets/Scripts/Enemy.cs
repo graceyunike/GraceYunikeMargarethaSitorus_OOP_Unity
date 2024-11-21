@@ -1,16 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
     public enum EnemyType { Horizontal, Forward, Targeting, Boss }
-    public EnemyType enemyType;  
-    public Transform playerTransform;
-    public int level; 
+    public EnemyType enemyType;
+
+    [SerializeField] protected int level;
+    public UnityEvent enemyKilledEvent;
+
+    private HealthComponent healthComponent;
+    private HitboxComponent hitboxComponent;
 
     private void Start()
     {
+        enemyKilledEvent ??= new UnityEvent();
+
         switch (enemyType)
         {
             case EnemyType.Horizontal:
@@ -26,17 +33,28 @@ public class Enemy : MonoBehaviour
                 level = 5;
                 break;
             default:
-                level = 1;  
+                level = 1;
                 break;
         }
+
+        healthComponent = GetComponent<HealthComponent>();
+        hitboxComponent = GetComponent<HitboxComponent>();
 
         Debug.Log("Enemy Level: " + level);
     }
 
-    private void Update()
-{
-    Vector2 direction = (playerTransform.position - transform.position).normalized;
-    float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-    transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-}
+    public void SetLevel(int level)
+    {
+        this.level = level;
+    }
+
+    public int GetLevel()
+    {
+        return level;
+    }
+
+    private void OnDestroy()
+    {
+        enemyKilledEvent.Invoke();
+    }
 }

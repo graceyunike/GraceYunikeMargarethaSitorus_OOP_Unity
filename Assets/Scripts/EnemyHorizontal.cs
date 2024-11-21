@@ -2,53 +2,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyHorizontal : Enemy
+public class EnemyHorizontalMovement : Enemy
 {
-    public float speed = 5f;  
-    private bool movingRight = true;  
-    public float spawnSide = 0f; 
+    [SerializeField] private float moveSpeed = 5f;
+    private Vector2 direction;
+
+    private void Awake()
     {
-        base.Start();  
-        
-        spawnSide = Random.Range(0f, 1f);  
-        {
-            transform.position = new Vector2(-10f, transform.position.y);  
-            movingRight = true;
-        }
-        else
-        {
-            transform.position = new Vector2(10f, transform.position.y);  
-            movingRight = false;
-        }
+        PickRandomPositions();
     }
 
     private void Update()
     {
-        MoveEnemy();
-        CheckBounds();
-    }
+        // Move horizontally
+        transform.Translate(moveSpeed * Time.deltaTime * direction);
 
-    private void MoveEnemy()
-    {
-        if (movingRight)
+        // Check for screen bounds and respawn if necessary
+        Vector3 enemyViewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        if ((enemyViewportPos.x < -0.05f && direction == Vector2.right) ||
+            (enemyViewportPos.x > 1.05f && direction == Vector2.left))
         {
-            transform.Translate(Vector2.right * speed * Time.deltaTime);
-        }
-        else
-        {
-            transform.Translate(Vector2.left * speed * Time.deltaTime);
+            PickRandomPositions();
         }
     }
 
-    private void CheckBounds()
+    private void PickRandomPositions()
     {
-        if (transform.position.x > 10f && movingRight)  
-        {
-            movingRight = false;  
-        }
-        else if (transform.position.x < -10f && !movingRight)  
-        {
-            movingRight = true;  
-        }
+        // Determine spawn side and direction
+        direction = Random.Range(0, 2) == 0 ? Vector2.right : Vector2.left;
+        Vector2 randomPos = direction == Vector2.right
+            ? new Vector2(-0.1f, Random.Range(0.1f, 0.9f))
+            : new Vector2(1.1f, Random.Range(0.1f, 0.9f));
+
+        transform.position = Camera.main.ViewportToWorldPoint(randomPos) + new Vector3(0, 0, 10);
     }
 }

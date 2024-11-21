@@ -1,44 +1,33 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool; 
+using UnityEngine.Pool;
+using UnityEngine.Assertions;
 
 public class Weapon : MonoBehaviour
 {
-    public Transform parentTransform;
-
     [Header("Weapon Stats")]
     [SerializeField] private float shootIntervalInSeconds = 3f; 
 
     [Header("Bullets")]
-    public Bullet Bullet; 
-    [SerializeField] private Transform BulletSpawnPoint;  
+    public Bullet bullet; 
+    [SerializeField] private Transform bulletSpawnPoint; 
 
     [Header("Bullet Pool")]
-    private IObjectPool<Bullet> objectPool;
+    private IObjectPool<Bullet> objectPool; 
 
     private readonly bool collectionCheck = false;
     private readonly int defaultCapacity = 30;
     private readonly int maxSize = 100;
-    private float timer;  
+
+    private float timer; 
+
+    public Transform parentTransform;
 
     private void Awake()
     {
-        if (Bullet == null) 
-        {
-            Debug.LogError("Bullet prefab is not assigned in the inspector.");
-            return;
-        }
+        Assert.IsNotNull(bulletSpawnPoint); 
 
-        objectPool = new ObjectPool<Bullet>(
-            CreateBullet,   
-            OnTakeFromPool,  
-            OnReturnedToPool,
-            OnDestroyPoolObject, 
-            collectionCheck,
-            defaultCapacity,
-            maxSize
-        );
+        objectPool = new ObjectPool<Bullet>(CreateBullet, OnGetFromPool, OnReleaseToPool, OnDestroyPooledObject, collectionCheck, defaultCapacity, maxSize);
     }
 
     private void Update()
@@ -47,45 +36,41 @@ public class Weapon : MonoBehaviour
 
         if (timer >= shootIntervalInSeconds)
         {
-            Shoot(); 
             timer = 0f; 
+            Shoot(); 
         }
     }
 
     private void Shoot()
-{
-    if (Bullet == null || BulletSpawnPoint == null)
     {
-        Debug.LogError("Bullet or BulletSpawnPoint is not assigned.");
-        return;
+        Bullet bulletObj = objectPool.Get();
+
+        bulletObj.transform.SetPositionAndRotation(bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+
+        bulletObj.SetPool(objectPool);
     }
-
-    Bullet newBullet = objectPool.Get(); 
-    newBullet.transform.position = BulletSpawnPoint.position;
-    newBullet.transform.rotation = BulletSpawnPoint.rotation;
-    newBullet.SetPool(objectPool); 
-}
-
 
     private Bullet CreateBullet()
     {
-        Bullet newBullet = Instantiate(Bullet);
-        newBullet.gameObject.SetActive(false);
-        return newBullet;
+        Bullet instance = Instantiate(bullet);
+        instance.objectPool = objectPool;
+        instance.transform.parent = transform; 
+
+        return instance;
     }
 
-    private void OnReturnedToPool(Bullet Bullet)
+    private void OnGetFromPool(Bullet obj)
     {
-        Bullet.gameObject.SetActive(false);
+        obj.gameObject.SetActive(true);
     }
 
-    private void OnTakeFromPool(Bullet Bullet)
+    private void OnReleaseToPool(Bullet obj)
     {
-        Bullet.gameObject.SetActive(true);
+        obj.gameObject.SetActive(false);
     }
 
-    private void OnDestroyPoolObject(Bullet Bullet)
+    private void OnDestroyPooledObject(Bullet obj)
     {
-        Destroy(Bullet.gameObject);
+        Destroy(obj.gameObject);
     }
 }
