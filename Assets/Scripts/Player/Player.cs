@@ -26,7 +26,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
-        animator = GameObject.Find("EngineEffect").GetComponent<Animator>();
+        animator = GetComponentInChildren<Animator>();
 
         healthComponent = GetComponent<HealthComponent>();
         attackComponent = GetComponent<AttackComponent>();
@@ -42,7 +42,7 @@ public class Player : MonoBehaviour
     {
         animator.SetBool("IsMoving", playerMovement.IsMoving());
 
-        if (Input.GetKeyDown(KeyCode.Space)) 
+        if (Input.GetKeyDown(KeyCode.Space) && attackComponent != null) 
         {
             attackComponent.Attack();
         }

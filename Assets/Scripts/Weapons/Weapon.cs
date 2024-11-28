@@ -18,9 +18,7 @@ public class Weapon : MonoBehaviour
     private readonly bool collectionCheck = false;
     private readonly int defaultCapacity = 30;
     private readonly int maxSize = 100;
-
-    private float timer; 
-
+    private float timer;
     public Transform parentTransform;
 
     private void Awake()

@@ -6,11 +6,13 @@ using UnityEngine.Pool;
 public class Bullet : MonoBehaviour
 {
     [Header("Bullet Stats")]
-    public float bulletSpeed = 20f;
-    public int damage = 10;
-
+    public float bulletSpeed = 20f; 
+    public int damage = 10;         
+    public float lifeTime = 5f;     
     private Rigidbody2D rb;
     public IObjectPool<Bullet> objectPool;
+
+    private Coroutine lifeTimeCoroutine;
 
     private void Awake()
     {
@@ -22,6 +24,17 @@ public class Bullet : MonoBehaviour
         if (rb != null)
         {
             rb.velocity = transform.up * bulletSpeed;
+        }
+
+        lifeTimeCoroutine = StartCoroutine(ReturnToPoolAfterLifeTime());
+    }
+
+    private void OnDisable()
+    {
+        if (lifeTimeCoroutine != null)
+        {
+            StopCoroutine(lifeTimeCoroutine);
+            lifeTimeCoroutine = null;
         }
     }
 
@@ -40,12 +53,18 @@ public class Bullet : MonoBehaviour
                 hitbox.Damage(damage);
             }
 
-            ReturnToPool();
+            ReturnToPool(); 
         }
     }
 
     private void OnBecameInvisible()
     {
+        ReturnToPool();
+    }
+
+    private IEnumerator ReturnToPoolAfterLifeTime()
+    {
+        yield return new WaitForSeconds(lifeTime);
         ReturnToPool();
     }
 

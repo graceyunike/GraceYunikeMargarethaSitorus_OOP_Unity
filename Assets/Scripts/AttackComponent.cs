@@ -5,6 +5,8 @@ public class AttackComponent : MonoBehaviour
 {
     public Bullet bullet; 
     public int damage; 
+    public GameObject bulletPrefab;
+    public Transform firePoint;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -25,6 +27,18 @@ public class AttackComponent : MonoBehaviour
         if (invincibility != null)
         {
             invincibility.TriggerInvincibility();  
+        }
+    }
+
+    public void Attack()
+    {
+        if (bulletPrefab != null && firePoint != null)
+        {
+            Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        }
+        else
+        {
+            Debug.LogWarning("BulletPrefab atau FirePoint tidak disetel pada AttackComponent.");
         }
     }
 }
