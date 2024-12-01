@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class EnemyClickSpawner : MonoBehaviour
 {
@@ -14,19 +15,24 @@ public class EnemyClickSpawner : MonoBehaviour
 
     private void Update()
     {
-        for (int i = 1; i <= enemyVariants.Length; i++){
-            if (Input.GetKeyDown(i.ToString())){
+        for (int i = 1; i <= enemyVariants.Length; i++)
+        {
+            if (Input.GetKeyDown(i.ToString()))
+            {
                 selectedVariant = i - 1;
             }
         }
 
-        if (Input.GetMouseButtonDown(1)){
+        if (Input.GetMouseButtonDown(1))
+        {
             SpawnEnemy();
         }
     }
 
-    private void SpawnEnemy(){
-        if (selectedVariant < enemyVariants.Length){
+    private void SpawnEnemy()
+    {
+        if (selectedVariant < enemyVariants.Length)
+        {
             Instantiate(enemyVariants[selectedVariant]);
         }
     }
